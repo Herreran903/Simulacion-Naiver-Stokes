@@ -1,4 +1,5 @@
-
+import numpy as np
+import matplotlib.pyplot as plt
 
 # Funcion para recorrer la malla.
 def travelMatrix(function, nx, ny, h, d):
