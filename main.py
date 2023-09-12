@@ -8,10 +8,11 @@ def travelMatrix(function, nx, ny, h, npoints):
     i = 0
     for y in range(1, ny - 1):
         for x in range(1, nx - 1):
-            i = i + 1
-            row = np.full(npoints, 0, dtype=object)
-            function(x, y, h, row, i)
-            A.append(row)
+            if(Vx[y, x] == -1):
+                i = i + 1
+                row = np.full(npoints, 0, dtype=object)
+                function(x, y, h, row, i)
+                A.append(row)
 
 # Funcion para discretizar los puntos de la malla.
 def discretizar(coeficiente, x, y, row, i):
@@ -74,6 +75,13 @@ for i in range(0, ny - 2):
         ID[i, j] = valor
         valor += 1
 
+ID = [[1, 2, 3, 0, 0, 0, 4, 5, 6],
+      [7,  8,  9, 10, 11, 12, 13, 14, 15],
+      [16, 17, 18, 19, 20, 21, 22, 23, 24],
+      [25, 26, 27,  0,  0,  0, 28, 29, 30]]
+
+ID = np.array(ID)
+
 print("Malla Navier Stokes")
 print(Vx)
 print("ID puntos malla Navier Stokes")
@@ -108,7 +116,7 @@ for row in ArrayExcel:
     sheet.append(row)
 
 # Guardar el archivo de Excel
-workbook.save('equationsNavierStokes2.xlsx')
+workbook.save('equationsNavierStokes3.xlsx')
 
 # EJEMPLO LAPLACE PROFESORA
 heightMesh = 10
@@ -153,6 +161,8 @@ for i in range(0, ny - 2):
     for j in range(0, nx - 2):
         ID[i, j] = valor
         valor += 1
+
+
 
 print("Malla Laplace")
 print(Vx)
