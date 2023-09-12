@@ -17,6 +17,7 @@ def travelMatrix(function, nx, ny, h, npoints):
 # Funcion para discretizar los puntos de la malla.
 def discretizar(coeficiente, x, y, row, i):
     if Vx[y, x] == -1:
+        #print(ID[y - 1, x - 1])
         row[(ID[y - 1, x - 1]) - 1] = coeficiente
     else:
         if Vx[y, x] != 0:
@@ -24,14 +25,20 @@ def discretizar(coeficiente, x, y, row, i):
 
 
 # EJEMPLO NAVIER STOKES MODFICADO
-heightMesh = 5
-widthMesh = 10
+anchoMalla = 10
+alturaMalla = 5
 
+# Numero de puntos de la malla en x.
 nx = 11
+# Numero de puntos de la malla en y.
 ny = 6
+# Numero de puntos de la columnas en x.
+nxc = 3
+# Numero de puntos de la columnas en y.
+nyc = 1
 
-x = np.linspace(0, widthMesh, nx)
-y = np.linspace(0, heightMesh, ny)
+x = np.linspace(0, alturaMalla, nx)
+y = np.linspace(0, anchoMalla, ny)
 X, Y = np.meshgrid(x, y)
 
 plt.figure(figsize=(10, 5))
@@ -53,12 +60,12 @@ Vx[-1, :] = 0
 # Restriccion de frontera pared inferior.
 Vx[:, -1] = 0
 # Restriccion columna 1.
-for i in range(1, 2):
-    for j in range(4, 7):
+for i in range(1, nyc + 1):
+    for j in range((Vx.shape[1]//2) - (nxc // 2), ((Vx.shape[1]//2) + (nxc // 2)) + 1):
         Vx[i, j] = 0
 # Restriccion columna 2
-for i in range(4, 5):
-    for j in range(4, 7):
+for i in range(Vx.shape[0] - (nyc + 1), Vx.shape[0] - 1):
+    for j in range((Vx.shape[1]//2) - (nxc // 2), ((Vx.shape[1]//2) + (nxc // 2)) + 1):
         Vx[i, j] = 0
 # Matriz de los coeficientes de la ecuacion.
 A = []
@@ -72,15 +79,28 @@ ID = np.empty((ny - 2, nx - 2), dtype=int)
 valor = 1
 for i in range(0, ny - 2):
     for j in range(0, nx - 2):
-        ID[i, j] = valor
-        valor += 1
+        if Vx[i + 1, j + 1] == -1:
+            ID[i, j] = valor
+            valor += 1
+        else:
+            ID[i, j] = 0
 
-ID = [[1, 2, 3, 0, 0, 0, 4, 5, 6],
+"""ID = [[1, 2, 3, 0, 0, 0, 4, 5, 6],
       [7,  8,  9, 10, 11, 12, 13, 14, 15],
       [16, 17, 18, 19, 20, 21, 22, 23, 24],
       [25, 26, 27,  0,  0,  0, 28, 29, 30]]
 
 ID = np.array(ID)
+
+ID = np.empty((ny - 2, nx - 2), dtype=int)
+
+# Rellenar las partes no nulas de la matriz
+for i in range(0, ny - 2):
+    for j in range(6 // 2):
+        ID[i, j] = i * (6 // 2) + j + 1
+        ID[i, nx - 2 - (6 // 2) + j] = i * (6 // 2) + j + 1"""
+
+print(ID)
 
 print("Malla Navier Stokes")
 print(Vx)
@@ -97,7 +117,9 @@ def navierStokesSimplify(x, y, h, row, i):
 
 
 print("Ecuaciones Navier Stokes")
-travelMatrix(navierStokesSimplify, nx, ny, 1, (ny - 2) * (nx - 2))
+print((ny - 2) * (nx - 2))
+print(((ny - 2) * (nx - 2)) - (2 * (nxc * nyc)))
+travelMatrix(navierStokesSimplify, nx, ny, 1, ((ny - 2) * (nx - 2)) - (2 * (nxc * nyc)))
 
 ArrayExcel = [list(row) for row in A]
 
@@ -115,18 +137,20 @@ sheet = workbook.active
 for row in ArrayExcel:
     sheet.append(row)
 
+print(np.array(ArrayExcel))
+
 # Guardar el archivo de Excel
-workbook.save('equationsNavierStokes3.xlsx')
+workbook.save('equationsNavierStokes5.xlsx')
 
 # EJEMPLO LAPLACE PROFESORA
-heightMesh = 10
-widthMesh = 20
+anchoMalla = 10
+alturaMalla = 20
 
 nx = 5
 ny = 3
 
-x = np.linspace(0, widthMesh, nx)
-y = np.linspace(0, heightMesh, ny)
+x = np.linspace(0, alturaMalla, nx)
+y = np.linspace(0, anchoMalla, ny)
 X, Y = np.meshgrid(x, y)
 
 plt.figure(figsize=(10, 5))
