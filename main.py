@@ -21,19 +21,18 @@ def discretizar(coeficiente, x, y, row, i):
         if Vx[y, x] != 0:
             b[i - 1] = b[i - 1] + (-1 * (coeficiente * Vx[y, x]))
 
-
 # EJEMPLO NAVIER STOKES MODFICADO
-anchoMalla = 30
-alturaMalla = 20
+anchoMalla = 10
+alturaMalla = 5
 
 # Numero de puntos de la malla en x.
-nx = 31
+nx = 11
 # Numero de puntos de la malla en y.
-ny = 21
+ny = 6
 # Numero de puntos de la columnas en x.
-nxc = 15
+nxc = 3
 # Numero de puntos de la columnas en y.
-nyc = 7
+nyc = 1
 
 x = np.linspace(0, alturaMalla, nx)
 y = np.linspace(0, anchoMalla, ny)
@@ -49,14 +48,14 @@ plt.grid(True)
 
 # Matriz de la velocidades en X.
 Vx = np.full((ny, nx), -1)
-# Restriccion de frontera pared izquierda.
-Vx[:, 0] = 2
 # Restriccion de frontera pared derecha.
 Vx[0, :] = 0
 # Restriccion de frontera pared superior.
 Vx[-1, :] = 0
 # Restriccion de frontera pared inferior.
 Vx[:, -1] = 0
+# Restriccion de frontera pared izquierda.
+Vx[:, 0] = 100
 # Restriccion columna 1.
 for i in range(1, nyc + 1):
     for j in range((Vx.shape[1]//2) - (nxc // 2), ((Vx.shape[1]//2) + (nxc // 2)) + 1):
@@ -80,13 +79,10 @@ for i in range(0, ny - 2):
         ID[i, j] = valor
         valor += 1
 
-print(ID)
-
 print("Malla Navier Stokes")
 print(Vx)
 print("ID puntos malla Navier Stokes")
 print(ID)
-
 
 def navierStokesSimplify(x, y, h, row, i):
     discretizar(3, x - h, y, row, i)
@@ -94,7 +90,6 @@ def navierStokesSimplify(x, y, h, row, i):
     discretizar(3, x, y - h, row, i)
     discretizar(1, x, y + h, row, i)
     discretizar(-8, x, y, row, i)
-
 
 print("Ecuaciones Navier Stokes")
 travelMatrix(navierStokesSimplify, nx, ny, 1, (ny - 2) * (nx - 2))
@@ -118,4 +113,4 @@ for row in ArrayExcel:
 print(np.array(ArrayExcel))
 
 # Guardar el archivo de Excel
-workbook.save('equationsNavierStokes.xlsx')
+workbook.save('equationsNavierStokes1.xlsx')
