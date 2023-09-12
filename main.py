@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import openpyxl
 
-
 # Funcion para recorrer la malla.
 def travelMatrix(function, nx, ny, h, npoints):
     i = 0
@@ -16,6 +15,7 @@ def travelMatrix(function, nx, ny, h, npoints):
 # Funcion para discretizar los puntos de la malla.
 def discretizar(coeficiente, x, y, row, i):
     if Vx[y, x] == -1:
+        #print(ID[y - 1, x - 1])
         row[(ID[y - 1, x - 1]) - 1] = coeficiente
     else:
         if Vx[y, x] != 0:
@@ -23,14 +23,20 @@ def discretizar(coeficiente, x, y, row, i):
 
 
 # EJEMPLO NAVIER STOKES MODFICADO
-heightMesh = 5
-widthMesh = 10
+anchoMalla = 30
+alturaMalla = 20
 
-nx = 11
-ny = 6
+# Numero de puntos de la malla en x.
+nx = 31
+# Numero de puntos de la malla en y.
+ny = 21
+# Numero de puntos de la columnas en x.
+nxc = 15
+# Numero de puntos de la columnas en y.
+nyc = 7
 
-x = np.linspace(0, widthMesh, nx)
-y = np.linspace(0, heightMesh, ny)
+x = np.linspace(0, alturaMalla, nx)
+y = np.linspace(0, anchoMalla, ny)
 X, Y = np.meshgrid(x, y)
 
 plt.figure(figsize=(10, 5))
@@ -39,7 +45,7 @@ plt.xlabel('Coordenada X')
 plt.ylabel('Coordenada Y')
 plt.title('Malla con Paredes para el Dominio 2D')
 plt.grid(True)
-plt.show()
+#plt.show()
 
 # Matriz de la velocidades en X.
 Vx = np.full((ny, nx), -1)
@@ -51,6 +57,14 @@ Vx[0, :] = 0
 Vx[-1, :] = 0
 # Restriccion de frontera pared inferior.
 Vx[:, -1] = 0
+# Restriccion columna 1.
+for i in range(1, nyc + 1):
+    for j in range((Vx.shape[1]//2) - (nxc // 2), ((Vx.shape[1]//2) + (nxc // 2)) + 1):
+        Vx[i, j] = 0
+# Restriccion columna 2
+for i in range(Vx.shape[0] - (nyc + 1), Vx.shape[0] - 1):
+    for j in range((Vx.shape[1]//2) - (nxc // 2), ((Vx.shape[1]//2) + (nxc // 2)) + 1):
+        Vx[i, j] = 0
 # Matriz de los coeficientes de la ecuacion.
 A = []
 # Vector de los resultados de la ecuacion.
@@ -65,6 +79,8 @@ for i in range(0, ny - 2):
     for j in range(0, nx - 2):
         ID[i, j] = valor
         valor += 1
+
+print(ID)
 
 print("Malla Navier Stokes")
 print(Vx)
@@ -99,85 +115,7 @@ sheet = workbook.active
 for row in ArrayExcel:
     sheet.append(row)
 
+print(np.array(ArrayExcel))
+
 # Guardar el archivo de Excel
 workbook.save('equationsNavierStokes.xlsx')
-
-# EJEMPLO LAPLACE PROFESORA
-heightMesh = 10
-widthMesh = 20
-
-nx = 5
-ny = 3
-
-x = np.linspace(0, widthMesh, nx)
-y = np.linspace(0, heightMesh, ny)
-X, Y = np.meshgrid(x, y)
-
-plt.figure(figsize=(10, 5))
-plt.plot(X, Y, 'bo', markersize=1)  # 'bo' representa puntos azules para la malla
-plt.xlabel('Coordenada X')
-plt.ylabel('Coordenada Y')
-plt.title('Malla con Paredes para el Dominio 2D')
-plt.grid(True)
-plt.show()
-
-# Matriz de la temperatura.
-Vx = np.full((ny, nx), -1)
-# Restriccion de frontera pared izquierda.
-Vx[:, 0] = 0
-# Restriccion de frontera pared superior.
-Vx[0, :] = 0
-# Restriccion de frontera pared inferior.
-Vx[-1, :] = 0
-# Restriccion de frontera pared derecha.
-Vx[:, -1] = 100
-# Matriz de los coeficientes de la ecuacion.
-A = []
-# Vector de los resultados de la ecuacion.
-b = np.full((ny - 2) * (nx - 2), 0, dtype=object)
-# Vector de las variables de la ecuacion.
-x = ["W" + str(i) for i in range(1, (ny - 2) * (nx - 2) + 1)]
-# Matriz de los identificadores de los puntos de la malla.
-ID = np.empty((ny - 2, nx - 2), dtype=int)
-
-valor = 1
-for i in range(0, ny - 2):
-    for j in range(0, nx - 2):
-        ID[i, j] = valor
-        valor += 1
-
-print("Malla Laplace")
-print(Vx)
-print("ID puntos malla Laplace")
-print(ID)
-
-
-def laplaceSimplify(x, y, h, d, i):
-    discretizar(1/25, x - h, y, d, i)
-    discretizar(1/25, x + h, y, d, i)
-    discretizar(1/25, x, y - h, d, i)
-    discretizar(1/25, x, y + h, d, i)
-    discretizar(-4/25, x, y, d, i)
-
-
-print("Ecuaciones Laplace")
-travelMatrix(laplaceSimplify, nx, ny, 1, (ny - 2) * (nx - 2))
-
-ArrayExcel = [list(row) for row in A]
-
-# Se agrega el vector de variables a la matriz de coeficientes.
-for i in range(len(ArrayExcel)):
-    ArrayExcel[i].append(x[i])
-# Se agrega el vector de resultados a la matriz de coeficientes.
-for i in range(len(ArrayExcel)):
-    ArrayExcel[i].append(b[i])
-
-workbook = openpyxl.Workbook()
-sheet = workbook.active
-
-# Llenar el archivo de Excel con los datos de la matriz
-for row in ArrayExcel:
-    sheet.append(row)
-
-# Guardar el archivo de Excel
-workbook.save('equationsLaplace.xlsx')
