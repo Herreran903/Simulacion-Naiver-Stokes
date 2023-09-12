@@ -39,7 +39,7 @@ plt.xlabel('Coordenada X')
 plt.ylabel('Coordenada Y')
 plt.title('Malla con Paredes para el Dominio 2D')
 plt.grid(True)
-plt.show()
+#plt.show()
 
 # Matriz de la velocidades en X.
 Vx = np.full((ny, nx), -1)
@@ -51,6 +51,14 @@ Vx[0, :] = 0
 Vx[-1, :] = 0
 # Restriccion de frontera pared inferior.
 Vx[:, -1] = 0
+# Restriccion columna 1.
+for i in range(1, 2):
+    for j in range(4, 7):
+        Vx[i, j] = 0
+# Restriccion columna 2
+for i in range(4, 5):
+    for j in range(4, 7):
+        Vx[i, j] = 0
 # Matriz de los coeficientes de la ecuacion.
 A = []
 # Vector de los resultados de la ecuacion.
@@ -100,7 +108,7 @@ for row in ArrayExcel:
     sheet.append(row)
 
 # Guardar el archivo de Excel
-workbook.save('equationsNavierStokes.xlsx')
+workbook.save('equationsNavierStokes2.xlsx')
 
 # EJEMPLO LAPLACE PROFESORA
 heightMesh = 10
@@ -119,7 +127,7 @@ plt.xlabel('Coordenada X')
 plt.ylabel('Coordenada Y')
 plt.title('Malla con Paredes para el Dominio 2D')
 plt.grid(True)
-plt.show()
+#plt.show()
 
 # Matriz de la temperatura.
 Vx = np.full((ny, nx), -1)
@@ -180,4 +188,4 @@ for row in ArrayExcel:
     sheet.append(row)
 
 # Guardar el archivo de Excel
-workbook.save('equationsLaplace.xlsx')
+#workbook.save('equationsLaplace.xlsx')
