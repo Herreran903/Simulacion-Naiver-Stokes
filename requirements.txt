@@ -1,3 +1,5 @@
 matplotlib==3.4.3
 openpyxl==3.1.2
 numpy==1.23.3
+sympy~=1.12
+scipy~=1.11.3
