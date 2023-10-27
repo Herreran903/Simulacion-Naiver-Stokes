@@ -224,19 +224,22 @@ def jacobi(matriz, array, tolerancia,c):
         #print(ArrayAct, calcToleranciaNorInf(ArrayAct, array), c+1)
         return jacobi(matriz, ArrayAct, tolerancia, c+1)
 
-def aplicarJacobi(A, B, w, tolerancia):
+def aplicarJacobi(A, B, solInicial, w, tolerancia):
     sistema = aplicarRelajación(A, B, w)
-    cero = np.zeros(len(sistema))
-    return jacobi(sistema, cero, tolerancia, 0)
+    
+    return jacobi(sistema, solInicial, tolerancia, 0)
 
 ## Solución para x
+cero = np.zeros(len(Avx))
 print("Jacobi Relajado para Vx")
-sol = aplicarJacobi(Avx, bvx, 1.01, 0.001)
-print(sol)
+solVx = aplicarJacobi(Avx, bvx, cero, 1.01, 0.001)
+print(solVx)
 
 ## Solución para y
-#print("Jacobi Relajado para Vy")
-#print(aplicarJacobiRelajado(Avy, bvy, 1.2, 0.001))
+solIniy = np.full(len(Avy), 0.1)
+print("Jacobi Relajado para Vy")
+solVy = aplicarJacobi(Avy, bvy, solIniy, 1.01, 0.001)
+print(solVy)
 
 """
 
