@@ -193,9 +193,6 @@ print(dominante(Avy))
 
 ## Calcula el error utilizando la norma infinita.
 def calcError(arrayact, arrayant):
-    ## si la solución actual es 0, se le suma un valor muy pequeño para evitar la división por 0.
-    if(max(arrayact) == 0): 
-        arrayact += 0.000000000000001
     x = abs(max((arrayact) - (arrayant))) / abs(max(arrayact))
     return x
 
@@ -230,9 +227,12 @@ def evaluarVector(matriz, array, tolerancia,c):
                 x += matriz[i][j] * array[j]
 
         ArrayAct[i] = x + matriz[i][len(array)] 
+ ## si el mayor del array actual es 0, se le suma un valor muy pequeño para evitar la división entre 0.
+    if(max(ArrayAct) == 0): 
+        ArrayAct += 0.000000000000001
 
     if(calcError(ArrayAct, array) < tolerancia):
-        return ArrayAct,c+1
+        return ArrayAct
     else:
         return evaluarVector(matriz, ArrayAct, tolerancia, c+1)
 
@@ -268,5 +268,5 @@ def igualdad(A, Msol):
             np.append(sol, x)
     return sol
 
-#print("Avy * solVy")
-#print(igualdad(Avy, solVy))
+print("Avy * solVy")
+print(igualdad(Avy, solVy))
