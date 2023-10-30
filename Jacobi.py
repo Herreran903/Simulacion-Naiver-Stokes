@@ -140,7 +140,7 @@ for i in range(Vx.shape[0] - (nyc + 1), Vx.shape[0] - 1):
 # System de los coeficientes de la ecuacion.
 Avx = []
 # Vector de los resultados de la ecuacion.
-bvx = np.full((ny - 2) * (nx - 2), 0, dtype=object)
+bvx = np.full(141, 0, dtype=object)
 # Vector de las variables de la ecuacion.
 Xvx = ["Vx" + str(i) for i in range(1, (ny - 2) * (nx - 2) + 1)]
 # System de los identificadores de los puntos de la malla.
@@ -161,7 +161,7 @@ for i in range(0, ny - 2):
 # System de los coeficientes de la ecuacion.
 Avy = []
 # Vector de los resultados de la ecuacion.
-bvy = np.full((ny - 2) * (nx - 2), 0, dtype=object)
+bvy = np.full(141, 0, dtype=object)
 # Vector de las variables de la ecuacion.
 Xvy = ["Vy" + str(i) for i in range(1, (ny - 2) * (nx - 2) + 1)]
 # System de los identificadores de los puntos de la malla.
@@ -260,13 +260,18 @@ print(solVx)
 solVy = solveUsingJacobi(Avy, bvy, cero, 1.5, 0.001)
 print(solVy)
 
-def igualdad(A, Msol):
-    sol = np.zeros(len(A))
-    for i in range(len(A)):
-        for j in range(len(A)):
-            x = A[i][j] * Msol[j]
-            np.append(sol, x)
-    return sol
+#print("Matriz bvx generada: ")
+#print(np.dot(Avx, solVx))
 
-print("Avy * solVy")
-print(igualdad(Avy, solVy))
+#error_relativoVx = np.linalg.norm(bvx - solVx) / np.linalg.norm(bvx)
+#print(error_relativoVx)
+
+#print("Matriz bvy generada: ")
+#print(np.dot(Avy, solVy))
+
+
+
+
+
+
+
