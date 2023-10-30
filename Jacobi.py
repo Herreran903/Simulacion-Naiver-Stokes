@@ -1,3 +1,4 @@
+from operator import le
 import numpy as np
 import matplotlib.pyplot as plt
 import openpyxl
@@ -139,7 +140,7 @@ for i in range(Vx.shape[0] - (nyc + 1), Vx.shape[0] - 1):
 # System de los coeficientes de la ecuacion.
 Avx = []
 # Vector de los resultados de la ecuacion.
-bvx = np.full((ny - 2) * (nx - 2), 0, dtype=object)
+bvx = np.full(141, 0, dtype=object)
 # Vector de las variables de la ecuacion.
 Xvx = ["Vx" + str(i) for i in range(1, (ny - 2) * (nx - 2) + 1)]
 # System de los identificadores de los puntos de la malla.
@@ -154,13 +155,13 @@ for i in range(0, ny - 2):
         else:
             IDvx[i, j] = 0
 
-print(IDvx)
+#print(IDvx)
 
 ## Matrices para Vy
 # System de los coeficientes de la ecuacion.
 Avy = []
 # Vector de los resultados de la ecuacion.
-bvy = np.full((ny - 2) * (nx - 2), 0, dtype=object)
+bvy = np.full(141, 0, dtype=object)
 # Vector de las variables de la ecuacion.
 Xvy = ["Vy" + str(i) for i in range(1, (ny - 2) * (nx - 2) + 1)]
 # System de los identificadores de los puntos de la malla.
@@ -171,28 +172,36 @@ travelMatrixVx(navierStokesSimplifyVx, nx, ny, 1, ((ny - 2) * (nx - 2)) - (2 * (
 
 travelMatrixVy(navierStokesSimplifyVy, nx, ny, 1, ((ny - 2) * (nx - 2)) - (2 * (nxc * nyc)))
 
-## Entrega 2 Jacobi-SobreRelajado
+## Entrega 2 metodo de evaluarVector-SobreRelajado
 
-## Determina si la System es diagonal dominante.
-def dominante(System):
-    for i in range(len(System)):
+## Determina si una matriz es diagonal estrictamente dominante. 
+## verficando si |aii| > |ai1| + |ai2| + ... + |ain|
+def dominante(matriz):
+    for i in range(len(matriz)):
         suma = 0
-        for j in range(len(System)):
+        for j in range(len(matriz)):
             if i != j:
-                suma += abs(System[i][j])
-            if abs(System[i][i]) < suma:
+                suma += abs(matriz[i][j])
+            if abs(matriz[i][i]) < suma:
                 return False
     return True
 
+print("Matriz Avx es diagonal estrictamente dominante?")
 print(dominante(Avx))
+print("Matriz Avy es diagonal estrictamente dominante?")
 print(dominante(Avy))
 
-def calcToleranciaNorInf(arrayact, arrayant):
+## Calcula el error utilizando la norma infinita.
+def calcError(arrayact, arrayant):
     x = abs(max((arrayact) - (arrayant))) / abs(max(arrayact))
     return x
 
-
-def aplicarRelajación(A, B, w):
+## Aplica la forma de  relajación teniendo como parametros la matriz A, 
+## el vector B y la constante de relajación w.
+## w < 0 subrelajación
+## w = 1 relajación
+## w > 1 sobrerelajación
+def aplicarJacobiConRelajacion(A, B, w):
     n = len(A)
     X = np.zeros((n, n+1))
 
@@ -207,8 +216,10 @@ def aplicarRelajación(A, B, w):
 
     return X
 
-
-def jacobi(matriz, array, tolerancia,c):
+## Genera el resultado de cada Xi y lo agregega al vector de resultados.
+## calcular si la tolerancia es menor a la tolerancia dada. Si es asi retorna el vector de resultados.
+## sino se llama a si misma con el vector de resultados como vector inicial.
+def evaluarVector(matriz, array, tolerancia,c):
     ArrayAct = np.zeros(len(array))
     for i in range(len(array)):
         x = 0
@@ -216,49 +227,51 @@ def jacobi(matriz, array, tolerancia,c):
                 x += matriz[i][j] * array[j]
 
         ArrayAct[i] = x + matriz[i][len(array)] 
+ ## si el mayor del array actual es 0, se le suma un valor muy pequeño para evitar la división entre 0.
+    if(max(ArrayAct) == 0): 
+        ArrayAct += 0.000000000000001
 
-    if(calcToleranciaNorInf(ArrayAct, array) < tolerancia):
-        #return [ArrayAct, calcToleranciaNorInf(ArrayAct, array), c+1]
+    if(calcError(ArrayAct, array) < tolerancia):
         return ArrayAct
     else:
-        #print(ArrayAct, calcToleranciaNorInf(ArrayAct, array), c+1)
-        return jacobi(matriz, ArrayAct, tolerancia, c+1)
+        return evaluarVector(matriz, ArrayAct, tolerancia, c+1)
 
-def aplicarJacobi(A, B, solInicial, w, tolerancia):
-    sistema = aplicarRelajación(A, B, w)
-    
-    return jacobi(sistema, solInicial, tolerancia, 0)
+## Función auxiliar para realizar los llamados para generar el sistema de ecuaciones y resolverlo.
+## A: matriz de coeficientes
+## B: vector de resultados
+## solInicial: vector solución
+## w: constante de relajación
+## tolerancia: tolerancia para el método
+def solveUsingJacobi(A, B, solInicial, w, tolerancia):
 
-## Solución para x
+    sistema = aplicarJacobiConRelajacion(A, B, w)
+    return evaluarVector(sistema, solInicial, tolerancia, 0)
+
+##Vector 0
 cero = np.zeros(len(Avx))
-print("Jacobi Relajado para Vx")
-solVx = aplicarJacobi(Avx, bvx, cero, 1.01, 0.001)
+
+## Solución para Vx
+## Se utiliza el vector 0 como solucón inicial, w = 1.05 y tolerancia = 0.001
+solVx = solveUsingJacobi(Avx, bvx, cero, 1.05, 0.001)
 print(solVx)
 
-## Solución para y
-solIniy = np.full(len(Avy), 0.1)
-print("Jacobi Relajado para Vy")
-solVy = aplicarJacobi(Avy, bvy, solIniy, 1.01, 0.001)
+## Solución para Vy
+## Se utiliza el vector 0 como solucón inicial, w = 1.05 y tolerancia = 0.001
+solVy = solveUsingJacobi(Avy, bvy, cero, 1.5, 0.001)
 print(solVy)
 
-"""
+#print("Matriz bvx generada: ")
+#print(np.dot(Avx, solVx))
 
-# GRAFICA DE LA MALLA.
-x = np.linspace(0, anchoMalla, nx)
-y = np.linspace(0, alturaMalla, ny)
-X, Y = np.meshgrid(x, y)
+#error_relativoVx = np.linalg.norm(bvx - solVx) / np.linalg.norm(bvx)
+#print(error_relativoVx)
 
-wall_x = np.array([((nx - 1) // 2) - ((nxc -1 )// 2) , ((nx - 1) // 2) - ((nxc -1 )// 2) , ((nx - 1) // 2) + ((nxc -1 )// 2), ((nx - 1) // 2) + ((nxc -1 )// 2)])  # Coordenadas en X de las paredes
-wall_y = np.array([0, nyc, nyc, 0])
-wall_y1 = np.array([ny-1, (ny-1) - nyc,  (ny-1) - nyc, ny-1])
-plt.figure(figsize=(10, 5))
-plt.plot(wall_x, wall_y, 'r-')  # Dibuja las paredes en rojo
-plt.plot(wall_x, wall_y1, 'r-')  # Dibuja las paredes en rojo
-plt.plot(X, Y, 'bo', markersize=1)  # 'bo' representa puntos azules para la malla
-plt.xlabel('Coordenada X')
-plt.ylabel('Coordenada Y')
-plt.title('Malla con Paredes para el Dominio 2D')
-plt.grid(True)
-plt.show()
+#print("Matriz bvy generada: ")
+#print(np.dot(Avy, solVy))
 
-"""
+
+
+
+
+
+
