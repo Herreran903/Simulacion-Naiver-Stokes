@@ -219,12 +219,13 @@ def aplicarJacobiConRelajacion(A, B, w):
 ## Genera el resultado de cada Xi y lo agregega al vector de resultados.
 ## calcular si la tolerancia es menor a la tolerancia dada. Si es asi retorna el vector de resultados.
 ## sino se llama a si misma con el vector de resultados como vector inicial.
-def evaluarVector(matriz, array, tolerancia,c):
+def evaluarVectorV1(matriz, array, tolerancia,c):
     ArrayAct = np.zeros(len(array))
     for i in range(len(array)):
         x = 0
         for j in range(len(array)):
                 x += matriz[i][j] * array[j]
+
 
         ArrayAct[i] = x + matriz[i][len(array)] 
  ## si el mayor del array actual es 0, se le suma un valor muy pequeño para evitar la división entre 0.
@@ -232,9 +233,31 @@ def evaluarVector(matriz, array, tolerancia,c):
         ArrayAct += 0.000000000000001
 
     if(calcError(ArrayAct, array) < tolerancia):
+        print("La solución converge en la iteración: ", c+1)
         return ArrayAct
     else:
-        return evaluarVector(matriz, ArrayAct, tolerancia, c+1)
+        return evaluarVectorV1(matriz, ArrayAct, tolerancia, c+1)
+
+## Igual que la anterior pero realiza devuelve el vector inicial, en caso de indeterminación
+def evaluarVectorV2(matriz, array, tolerancia,c):
+    ArrayAct = np.zeros(len(array))
+    for i in range(len(array)):
+        x = 0
+        for j in range(len(array)):
+                x += matriz[i][j] * array[j]
+
+
+        ArrayAct[i] = x + matriz[i][len(array)] 
+ ## si el mayor del array actual es 0, se le suma un valor muy pequeño para evitar la división entre 0.
+    if(max(ArrayAct) == 0 and max(array) == 0):
+        print("La solución converge en la iteración: ", c)
+        return array 
+
+    if(calcError(ArrayAct, array) < tolerancia):
+        print("La solución converge en la iteración: ", c+1)
+        return ArrayAct
+    else:
+        return evaluarVectorV2(matriz, ArrayAct, tolerancia, c+1)
 
 ## Función auxiliar para realizar los llamados para generar el sistema de ecuaciones y resolverlo.
 ## A: matriz de coeficientes
@@ -245,14 +268,16 @@ def evaluarVector(matriz, array, tolerancia,c):
 def solveUsingJacobi(A, B, solInicial, w, tolerancia):
 
     sistema = aplicarJacobiConRelajacion(A, B, w)
-    return evaluarVector(sistema, solInicial, tolerancia, 0)
+    return evaluarVectorV2(sistema, solInicial, tolerancia, 0)
 
 ##Vector 0
 cero = np.zeros(len(Avx))
+uno = np.full(len(Avx), 1)
+dos = np.full(len(Avx), 2)
 
 ## Solución para Vx
 ## Se utiliza el vector 0 como solucón inicial, w = 1.05 y tolerancia = 0.001
-solVx = solveUsingJacobi(Avx, bvx, cero, 1.05, 0.001)
+solVx = solveUsingJacobi(Avx, bvx, dos, 1.05, 0.001)
 print(solVx)
 
 ## Solución para Vy
@@ -260,14 +285,19 @@ print(solVx)
 solVy = solveUsingJacobi(Avy, bvy, cero, 1.5, 0.001)
 print(solVy)
 
-#print("Matriz bvx generada: ")
-#print(np.dot(Avx, solVx))
+print("Matriz bvx generada: ")
+print(np.dot(Avx, solVx))
 
-#error_relativoVx = np.linalg.norm(bvx - solVx) / np.linalg.norm(bvx)
-#print(error_relativoVx)
+error_relativoVx = (np.linalg.norm(bvx - np.dot(Avx,solVx)) / np.linalg.norm(bvx)) * 100
+print("error Solución para Vx: ")
+print(error_relativoVx)
 
-#print("Matriz bvy generada: ")
-#print(np.dot(Avy, solVy))
+print("Matriz bvy generada: ")
+print(np.dot(Avy, solVy))
+
+error_relativoVy = (np.linalg.norm(bvy - np.dot(Avy,solVy))) * 100
+print(error_relativoVy)
+
 
 
 
