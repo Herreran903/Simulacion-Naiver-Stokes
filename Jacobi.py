@@ -268,7 +268,7 @@ def evaluarVectorV2(matriz, array, tolerancia,c):
 def solveUsingJacobi(A, B, solInicial, w, tolerancia):
 
     sistema = aplicarJacobiConRelajacion(A, B, w)
-    return evaluarVectorV1(sistema, solInicial, tolerancia, 0)
+    return evaluarVectorV2(sistema, solInicial, tolerancia, 0)
 
 ##Vector 0
 cero = np.zeros(len(Avx))
