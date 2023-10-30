@@ -189,6 +189,29 @@ def cond(A):
     c = np.dot(np.linalg.norm(A), np.linalg.norm(np.invert(A)))
     return c
 
+## Función para determinar la simetría de la matriz
+
+def simetriaMatriz(A):
+    if np.array_equal(A, np.transpose(A)):
+        return True
+    return False
+
+print("Matriz Avx es simétrica?")
+print(simetriaMatriz(Avx))
+print("Matriz Avy es simétrica?")
+print(simetriaMatriz(Avy))
+
+## Función para determinar si una matriz es positiva
+
+def matrizPositiva(A):
+    if np.all(A)>=0:
+        return True
+    return False
+
+print("Matriz Avx es positiva?")
+print(matrizPositiva(Avx))
+print("Matriz Avy es positiva?")
+print(matrizPositiva(Avy))
 
 ## Función que muestra la solución del metodo iterativo de gradiente conjugado
 ## donde se comprueba la condición de parada mediante un while que la norma del
