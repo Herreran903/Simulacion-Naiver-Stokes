@@ -184,6 +184,11 @@ def igualdad(A, Msol):
 
     return sol
 
+## Función que me ayuda a determinar el número de condición de la matriz
+def cond(A):
+    c = np.dot(np.linalg.norm(A), np.linalg.norm(np.invert(A)))
+    return c
+
 
 ## Función que muestra la solución del metodo iterativo de gradiente conjugado
 ## donde se comprueba la condición de parada mediante un while que la norma del
@@ -192,7 +197,7 @@ def igualdad(A, Msol):
 def gradianteConjugado(matriz, vector, puntoInicial, tol):
     x = puntoInicial
     gradiente = vector - (matriz @ x)
-    direccion = gradiente
+    direccion = -gradiente
 
     i = 0
     while np.linalg.norm(gradiente) > tol:
@@ -248,7 +253,7 @@ initialValueVx = [2.49998758e+00, 1.34669132e+00, 7.73744912e-01, 4.68535777e-01
                   6.40993185e-03]
 
 print("Gradiente Conjugado para Vx")
-solX = gradianteConjugado(Avx, bvx, np.array(initialValueVx), 1)
+solX = gradianteConjugado(Avx, bvx, np.array(initialValueVx), 1.5)
 print(solX)
 
 initialValueVy = [0.02425,  0.062125, 0.062125, 0.062125, 0.062125, 0.062125, 0.0495,   0.02425,
@@ -271,5 +276,13 @@ initialValueVy = [0.02425,  0.062125, 0.062125, 0.062125, 0.062125, 0.062125, 0.
                   0.087375, 0.087375, 0.087375, 0.087375, 0.07475]
 
 print("Gradiente Conjugado para Vy")
-solY = gradianteConjugado(Avy, bvy, np.array(initialValueVy), 10)
+solY = gradianteConjugado(Avy, bvy, np.array(initialValueVy), 1.5)
 print(solY)
+
+print("Número de condición para Vx:")
+condAvx = cond(Avx)
+print(condAvx)
+
+print("Número de condición para Vy:")
+condAvy = cond(Avy)
+print(condAvy)
