@@ -115,7 +115,7 @@ Vx[-1, :] = 0
 # Restriccion de frontera pared inferior.
 Vx[:, -1] = 0
 # Restriccion de frontera pared izquierda.
-Vx[:, 0] = 5
+Vx[:, 0] = 1000
 
 # System de la velocidades en y.
 Vy = Vx.copy()
@@ -268,7 +268,7 @@ def evaluarVectorV2(matriz, array, tolerancia,c):
 def solveUsingJacobi(A, B, solInicial, w, tolerancia):
 
     sistema = aplicarJacobiConRelajacion(A, B, w)
-    return evaluarVectorV2(sistema, solInicial, tolerancia, 0)
+    return evaluarVectorV2(sistema, solInicial, tolerancia, 0).tolist()
 
 ##Vector 0
 cero = np.zeros(len(Avx))
