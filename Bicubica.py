@@ -2,6 +2,22 @@ import numpy as np
 from sympy import symbols, diff, sympify, lambdify
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp2d
+
+def reemplazar_valores1(matriz, vector):
+    # Crear una copia de la matriz para evitar cambios en la original
+    nueva_matriz = matriz.astype(float)
+
+    # Obtener las posiciones de los valores -1 en la matriz
+    posiciones = np.where(matriz == -1)
+
+    # Iterar sobre las posiciones y reemplazar los valores con los del vector
+    for i in range(len(posiciones[0])):
+        fila = posiciones[0][i]
+        columna = posiciones[1][i]
+        nueva_matriz[fila, columna] = vector[i]
+
+    return nueva_matriz
+
 np.set_printoptions(linewidth=np.inf)
 # VALORES INICIALES.
 nx = 21
@@ -75,6 +91,10 @@ resultsInX = [2.49999494e+00, 1.34671408e+00, 7.73798462e-01, 4.68633309e-01,
               3.14794984e-02, 3.10194529e-02, 3.09201856e-02, 2.26334477e-02,
               1.89807749e-02]
 
+plt.imshow(reemplazar_valores1(Vx, resultsInX), cmap='viridis', interpolation='nearest')
+plt.colorbar()
+
+plt.show()
 # resultsInX = [-14.999998830386438, -3.7079811021634157e-06, 8.609204231291301e-06,
 #               -1.6144968261633252e-05, 2.680995323034452e-05, -3.597223832774166e-05,
 #               3.526772140943768e-05, -7.591842818620818e-06, 3.028659589564861e-05,
@@ -492,7 +512,7 @@ print(len(vectorTotal))
 # VALORES INICIALES.
 # 141 * 4 = 564
 
-nx =  41 #39
+nx =  40 #39
 ny =  20 #18
 # nx * ny = 702
 nxc = 10 #11
@@ -526,12 +546,12 @@ Vy = Vx.copy()
 Vy[:, 0] = 0
 print(Vx)
 for i in range(1, nyc + 1):
-    for j in range((Vx.shape[1] // 2) - (nxc // 2), ((Vx.shape[1] // 2) + (nxc // 2)) + 1):
+    for j in range((Vx.shape[1] // 2) - (nxc // 2), ((Vx.shape[1] // 2) + (nxc // 2))):
         Vx[i, j] = 0
         Vy[i, j] = 0
 
 for i in range(Vx.shape[0] - (nyc + 1), Vx.shape[0] - 1):
-    for j in range((Vx.shape[1] // 2) - (nxc // 2), ((Vx.shape[1] // 2) + (nxc // 2)) + 1):
+    for j in range((Vx.shape[1] // 2) - (nxc // 2), ((Vx.shape[1] // 2) + (nxc // 2))):
         Vx[i, j] = 0
         Vy[i, j] = 0
 
@@ -545,7 +565,7 @@ for i in range(0, ny - 2):
         else:
             IDvx[i, j] = 0
 
-#print(Vx)
+print(Vx)
 #print(IDvx)
 #print(reemplazar_valores(Vx, vectorTotal))
 
@@ -606,10 +626,15 @@ for y in range(1, a.shape[0] - 1, 1):
             j += 4
 
 
+
+
 plt.imshow(a, cmap='viridis', interpolation='nearest')
 plt.colorbar()
 
 plt.show()
+
+
+
 
 
 print(a)
