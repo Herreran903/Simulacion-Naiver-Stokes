@@ -316,6 +316,9 @@ def tourMatrix(nx, ny, matrix, inverseMatrix):
         for x in range(1, nx - 1):
             if (matrix[y, x] == -1):
                 constants.append(calculateConstants(x, y, inverseMatrix))
+            else:
+                if x == 25:
+                    constants.append(calculateConstants(x, y, inverseMatrix))
 
     return np.array(constants)
 
@@ -357,8 +360,8 @@ Babaj = np.zeros(len(resultsInX)).astype(float)
 Adiag = Vx.copy().astype(float)
 Bdiag = np.zeros(len(resultsInX)).astype(float)
 
-for y in range(1, ny - 1):
-    for x in range(1, nx - 1):
+for y in range(0, ny - 1):
+    for x in range(0, nx - 1):
         if (Vx[y, x] == -1):
             nuevos_valores = calculateNewPoints(i, x, y, variables, constants)
 
@@ -410,27 +413,30 @@ def reemplazar_valores(matriz, vector):
     # Obtener las posiciones de los valores -1 en la matriz
     posiciones = np.where(matriz == -1)
 
+    print(posiciones)
+    print(len(posiciones[0]))
+
     # Iterar sobre las posiciones y reemplazar los valores con los del vector
-    i = 0
-    j = 0
+    i = 1
 
-    while i < len(posiciones[0]):
-                
-        fila = posiciones[0][i]
-        columna = posiciones[1][i]
+    for y in range(1, ny - 1):
+        for x in range(1, nx - 1):
+            if (Vx[y, x] == -1):
+                print(i)
+                fila = posiciones[0][i]
+                columna = posiciones[1][i]
 
-        j = i
-        
-        # punto x,y
-        nueva_matriz[fila, columna] = vector[i]
-        # punto x+1,y derecha
-        nueva_matriz[fila, columna + 1] = vector[i+1]
-        # punto x,y+1 abajo
-        nueva_matriz[fila + 1, columna] = vector[i+2]
-        # punto x+1,y+1 diagonal
-        nueva_matriz[fila + 1, columna + 1] = vector[i+3]
-        
-        i += 2
+                # punto x,y
+                nueva_matriz[fila, columna] = vector[i]
+                # punto x+1,y derecha
+                nueva_matriz[fila, columna + 1] = vector[i+1]
+                # punto x,y+1 abajo
+                nueva_matriz[fila + 1, columna] = vector[i+2]
+                # punto x+1,y+1 diagonal
+                nueva_matriz[fila + 1, columna + 1] = vector[i+3]
+
+                i += 4
+
 
     return nueva_matriz
 
@@ -486,15 +492,15 @@ print(len(vectorTotal))
 # VALORES INICIALES.
 # 141 * 4 = 564
 
-nx =  39 #39
-ny =  18 #18
+nx =  41 #39
+ny =  20 #18
 # nx * ny = 702
-nxc = 12 #11
+nxc = 10 #11
 nyc = 6 #6
 # nxc * nyc * 2 = 132
 # 702-132 = 570 
 #  6 puntos 
-
+print()
 """
 
 [[  1   2   3   4   5   6   7   0   0   0   0   0   8   9  10  11  12  13 14]
@@ -518,7 +524,7 @@ Vx[:, 0] = 5
 
 Vy = Vx.copy()
 Vy[:, 0] = 0
-
+print(Vx)
 for i in range(1, nyc + 1):
     for j in range((Vx.shape[1] // 2) - (nxc // 2), ((Vx.shape[1] // 2) + (nxc // 2)) + 1):
         Vx[i, j] = 0
@@ -543,7 +549,68 @@ for i in range(0, ny - 2):
 #print(IDvx)
 #print(reemplazar_valores(Vx, vectorTotal))
 
-plt.imshow(reemplazar_valores(Vx, vectorTotal), cmap='viridis', interpolation='nearest')
+
+
+# plt.imshow(reemplazar_valores(Vx, vectorTotal), cmap='viridis', interpolation='nearest')
+# plt.colorbar()
+
+# plt.show()
+
+# Tamaño de la matriz
+# ny, nx = 9, 9
+#
+# # Matriz inicial
+# matrix = np.zeros((ny, nx))
+#
+# # Vector de interpolación (cambiado para un solo punto por simplicidad)
+# interpolation_vector = [5, -1, -1, -1]
+#
+# # Coordenadas del punto en la matriz
+# x, y = 1, 1
+#
+# # Actualización de la matriz
+# matrix[y:y+2, x:x+2] += np.array([[interpolation_vector[0], interpolation_vector[1]],
+#                                   [interpolation_vector[2], interpolation_vector[3]]])
+#
+# print(matrix)
+# print(vectorTotal)
+
+
+# for y in range(0, matrix.shape[0] - 1, 2):
+#     for x in range(0, matrix.shape[1] - 1, 2):
+#         matrix[y:y+2, x:x+2] = np.array([[vectorTotal[0], vectorTotal[1]],
+#                                           [vectorTotal[2], vectorTotal[3]]])
+#
+# print(matrix)
+
+IDvx = np.empty((ny - 2, nx - 2), dtype=int)
+valor = 1
+for i in range(0, ny - 2):
+    for j in range(0, nx - 2):
+        if Vx[i + 1, j + 1] == -1:
+            IDvx[i, j] = valor
+            valor += 1
+        else:
+            IDvx[i, j] = 0
+
+print(IDvx)
+
+a = Vx.copy().astype(float)
+j = 0
+print(a)
+for y in range(1, a.shape[0] - 1, 1):
+    for x in range(1, a.shape[1] - 1, 1):
+        if a[y, x] == -1:
+            a[y:y+2, x:x+2] = np.array([[vectorTotal[0 + j], vectorTotal[1 + j]],
+                                              [vectorTotal[2 + j], vectorTotal[3 + j]]], dtype=float)
+            j += 4
+
+
+plt.imshow(a, cmap='viridis', interpolation='nearest')
 plt.colorbar()
 
 plt.show()
+
+
+print(a)
+print(len(vectorTotal))
