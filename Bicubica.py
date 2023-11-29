@@ -165,6 +165,8 @@ variables = symbols("x y")
 
 
 # FUNCIONES PARA LA INTERPOLACION BICUBICA.
+
+# función para las ecuaciones de la spline cubica
 def biCubicSplineEquation():
     ecuacion = ""
     for i in range(0, 4):
@@ -174,7 +176,7 @@ def biCubicSplineEquation():
 
     return ecuacion_simbolica
 
-
+# función para las ecuaciones de la spline cubica de la derivada de x
 def biCubicSplineEquationX():
     ecuacion = ""
     for i in range(0, 4):
@@ -184,7 +186,7 @@ def biCubicSplineEquationX():
 
     return ecuacion_simbolica
 
-
+# función para las ecuaciones de la spline cubicade la derivada de y
 def biCubicSplineEquationY():
     ecuacion = ""
     for i in range(0, 4):
@@ -194,7 +196,7 @@ def biCubicSplineEquationY():
 
     return ecuacion_simbolica
 
-
+# función para las ecuaciones de la spline cubica de xy
 def biCubicSplineEquationXY():
     ecuacion = ""
     for i in range(0, 4):
@@ -205,7 +207,7 @@ def biCubicSplineEquationXY():
 
     return ecuacion_simbolica
 
-
+# función para generar el sistema de ecuaciones
 def generateSystemEquations(variables):
     ecuations = []
     ecuationBiCubic = biCubicSplineEquation()
@@ -227,7 +229,7 @@ def generateSystemEquations(variables):
 
     return ecuations
 
-
+# función para generar la matriz de coeficientes
 def generateCoefficientMatrix(variables):
     coefs = []
     ecuations = generateSystemEquations(variables)
@@ -259,23 +261,23 @@ def valueOfMesh(x, y):
         except IndexError:
             return 0
 
-
+# función para la derivada de x
 def valueOfFirstDerivateX(x, y):
     firstDerivateX = (valueOfMesh(x + 1, y) - valueOfMesh(x - 1, y)) / 2
     return firstDerivateX
 
-
+# función para la derivada de y
 def valueOfFirstDerivateY(x, y):
     firstDerivateY = (valueOfMesh(x, y + 1) - valueOfMesh(x, y - 1)) / 2
     return firstDerivateY
 
-
+# función para la derivada de xy
 def valueOfFirstDerivateXY(x, y):
     firstDerivateXY = (valueOfMesh(x - 1, y - 1) + valueOfMesh(x + 1, y + 1) - valueOfMesh(x + 1, y - 1) + valueOfMesh(
         x - 1, y + 1)) / 4
     return firstDerivateXY
 
-
+# función para calcular el vector de funciones
 def calculateVectorFunctions(x, y):
     functions = [valueOfMesh, valueOfFirstDerivateX, valueOfFirstDerivateY, valueOfFirstDerivateXY]
     vector = []
@@ -286,7 +288,7 @@ def calculateVectorFunctions(x, y):
                 vector.append(function(j, i))
     return vector
 
-
+# función para calcular el vector de constantes
 def calculateVectorConstants(x, y):
     vector = []
     for i in range(y, y + 4):
@@ -298,15 +300,16 @@ def calculateVectorConstants(x, y):
 
 # print(calculateVectorConstants(0,0))
 
+# calcula la matriz inversa
 inverseMatrix = np.linalg.inv(generateCoefficientMatrix(variables))
 
-
+# calcula los coeficientes de la ecuacion de la spline cubica
 def calculateConstants(x, y, inverseMatrix):
     constants = inverseMatrix @ calculateVectorFunctions(x, y)
 
     return np.array(constants)[0]
 
-
+# genera la matriz de constantes
 def tourMatrix(nx, ny, matrix, inverseMatrix):
     constants = []
     for y in range(1, ny - 1):
@@ -320,7 +323,7 @@ def tourMatrix(nx, ny, matrix, inverseMatrix):
 constants = tourMatrix(nx, ny, Vx, inverseMatrix)
 print(constants)
 
-
+# calcula los nuevos puntos
 def calculateNewPoints(i, x, y, variables, constants):
     ecuacion_spline = biCubicSplineEquation()
     constantes = calculateVectorConstants(0, 0)
@@ -330,36 +333,75 @@ def calculateNewPoints(i, x, y, variables, constants):
     nuevos_valores = lambdify(variables, a)(*[(2 * x + 1) / 2, (2 * y + 1) / 2])
     ecuacion_sustituida = ecuacion_spline.subs(
         {symbols(f'a{j}{k}'): constants[i][constantes.index(f'a{j}{k}')] for k in range(4) for j in range(4)})
-    a = ecuacion_sustituida.subs({symbols('x'): 0.5, symbols('y'): 0.5})
-    return a
+    diagonal = ecuacion_sustituida.subs({symbols('x'): 0.5, symbols('y'): 0.5})
+    abajo = ecuacion_sustituida.subs({symbols('x'): 0, symbols('y'): 0.5})
+    derecha = ecuacion_sustituida.subs({symbols('x'): 0.5, symbols('y'): 0})
+
+    return (derecha, abajo, diagonal)
 
 
 print(calculateNewPoints(0, 1, 1, variables, constants))
 
+## Definiciones para los diferentes puntos nuevos
+
+# Derecha
 i = 0
-A = Vx.copy().astype(float)
-B = np.zeros(len(resultsInX)).astype(float)
+Ader = Vx.copy().astype(float)
+Bder = np.zeros(len(resultsInX)).astype(float)
+
+# Abajo
+Abaj = Vx.copy().astype(float)
+Babaj = np.zeros(len(resultsInX)).astype(float)
+
+# Diagonal
+Adiag = Vx.copy().astype(float)
+Bdiag = np.zeros(len(resultsInX)).astype(float)
+
 for y in range(1, ny - 1):
     for x in range(1, nx - 1):
         if (Vx[y, x] == -1):
             nuevos_valores = calculateNewPoints(i, x, y, variables, constants)
-            B[i] = nuevos_valores
-            A[y, x] = nuevos_valores
+
+            Bder[i] = nuevos_valores[0]
+            Ader[y, x] = nuevos_valores[0]
+
+            Babaj[i] = nuevos_valores[1]
+            Abaj[y, x] = nuevos_valores[1]
+
+            Bdiag[i] = nuevos_valores[2]
+            Adiag[y, x] = nuevos_valores[2]
             i += 1
 
+"""
 print(Vx)
-print(B)
+print(Bder)
 
-plt.imshow(A, cmap='viridis', interpolation='nearest')
+plt.imshow(Ader, cmap='viridis', interpolation='nearest')
 plt.colorbar()
 
 plt.show()
 
+plt.imshow(Abaj, cmap='viridis', interpolation='nearest')
+plt.colorbar()
+
+plt.show()
+
+plt.imshow(Adiag, cmap='viridis', interpolation='nearest')
+plt.colorbar()
+
+plt.show()
+"""
+
+print(len(Bder))
+print(len(Babaj))
+print(len(Bdiag))
+
+"""
 plt.imshow(Vx, cmap='viridis', interpolation='nearest')
 plt.colorbar()
 
 plt.show()
-
+"""
 
 def reemplazar_valores(matriz, vector):
     # Crear una copia de la matriz para evitar cambios en la original
@@ -369,16 +411,32 @@ def reemplazar_valores(matriz, vector):
     posiciones = np.where(matriz == -1)
 
     # Iterar sobre las posiciones y reemplazar los valores con los del vector
-    for i in range(len(posiciones[0])):
+    i = 0
+    j = 0
+
+    while i < len(posiciones[0]):
+                
         fila = posiciones[0][i]
         columna = posiciones[1][i]
+
+        j = i
+        
+        # punto x,y
         nueva_matriz[fila, columna] = vector[i]
+        # punto x+1,y derecha
+        nueva_matriz[fila, columna + 1] = vector[i+1]
+        # punto x,y+1 abajo
+        nueva_matriz[fila + 1, columna] = vector[i+2]
+        # punto x+1,y+1 diagonal
+        nueva_matriz[fila + 1, columna + 1] = vector[i+3]
+        
+        i += 2
 
     return nueva_matriz
 
-
+"""
 matriz_nueva = reemplazar_valores(Vx, resultsInX)
-matriz_nueva2 = reemplazar_valores(Vx, B)
+matriz_nueva2 = reemplazar_valores(Vx, Bder)
 
 plt.imshow(matriz_nueva, cmap='viridis', interpolation='nearest')
 plt.colorbar()
@@ -406,30 +464,36 @@ print(calculateNewPoints(140, 19, 9, variables, constants))
 print(np.array(calculateVectorConstants(0, 0)))
 print(biCubicSplineEquation())
 print(Vx)
-
-def intercalar_vectores(lista1, lista2):
-    # Verificar que ambas listas tengan la misma longitud
-    if len(lista1) != len(lista2):
-        raise ValueError('Las listas deben tener la misma longitud')
+"""
+def intercalar_vectores(lista1, lista2, lista3, lista4):
+    # Verificar que todas las listas tengan la misma longitud
+    if len(lista1) != len(lista2) != len(lista3) != len(lista4):
+        raise ValueError('Todas las listas deben tener la misma longitud')
 
     # Inicializar la lista resultado
     resultado = []
 
-    # Iterar sobre los elementos de ambas listas e intercalarlos
-    for elemento1, elemento2 in zip(lista1, lista2):
-        resultado.extend([elemento1, elemento2])
+    # Iterar sobre los elementos de todas las listas e intercalarlos
+    for elem1, elem2, elem3, elem4 in zip(lista1, lista2, lista3, lista4):
+        resultado.extend([elem1, elem2, elem3, elem4])
 
     return resultado
 
-a = intercalar_vectores(resultsInX, B)
-print(a)
+vectorTotal = intercalar_vectores(resultsInX, Bder, Babaj, Bdiag)
+# print(vectorTotal)
 
-print(len(a))
+print(len(vectorTotal))
 # VALORES INICIALES.
-nx =  28 #39
-ny =  15 #1518
-nxc = 7 #12
-nyc = 4 #8
+# 141 * 4 = 564
+
+nx =  39 #39
+ny =  18 #18
+# nx * ny = 702
+nxc = 12 #11
+nyc = 6 #6
+# nxc * nyc * 2 = 132
+# 702-132 = 570 
+#  6 puntos 
 
 """
 
@@ -475,13 +539,11 @@ for i in range(0, ny - 2):
         else:
             IDvx[i, j] = 0
 
-print(Vx)
-print(IDvx)
-print(reemplazar_valores(Vx, a))
+#print(Vx)
+#print(IDvx)
+#print(reemplazar_valores(Vx, vectorTotal))
 
-plt.imshow(reemplazar_valores(Vx, a), cmap='viridis', interpolation='nearest')
+plt.imshow(reemplazar_valores(Vx, vectorTotal), cmap='viridis', interpolation='nearest')
 plt.colorbar()
 
 plt.show()
-
-Array = np.array([ 5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0  0  0  0  0  0  0  0  0  0  0  0  0])
