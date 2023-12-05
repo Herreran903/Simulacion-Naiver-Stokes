@@ -318,36 +318,6 @@ for y in range(0, ny - 1):
             Adiag[y, x] = nuevos_valores[2]
             i += 1
 
-def reemplazar_valores(matriz, vector):
-    # Crear una copia de la matriz para evitar cambios en la original
-    nueva_matriz = matriz.astype(float)
-
-    # Obtener las posiciones de los valores -1 en la matriz
-    posiciones = np.where(matriz == -1)
-
-    # Iterar sobre las posiciones y reemplazar los valores con los del vector
-    i = 1
-
-    for y in range(1, ny - 1):
-        for x in range(1, nx - 1):
-            if (Vx[y, x] == -1):
-                fila = posiciones[0][i]
-                columna = posiciones[1][i]
-
-                # punto x,y
-                nueva_matriz[fila, columna] = vector[i]
-                # punto x+1,y derecha
-                nueva_matriz[fila, columna + 1] = vector[i+1]
-                # punto x,y+1 abajo
-                nueva_matriz[fila + 1, columna] = vector[i+2]
-                # punto x+1,y+1 diagonal
-                nueva_matriz[fila + 1, columna + 1] = vector[i+3]
-
-                i += 4
-
-
-    return nueva_matriz
-
 # intercala los vectores del puntos de la soulción con sus vecionos, es decir
 # Punto [0,0], Punto [1,0], Punto [0,1], Punto [1,1] y asi sucevivamente.
 def intercalar_vectores(lista1, lista2, lista3, lista4):
